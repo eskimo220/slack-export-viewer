@@ -1,18 +1,32 @@
 import flask
-
+from flask_httpauth import HTTPBasicAuth
 
 app = flask.Flask(
     __name__,
     template_folder="templates",
     static_folder="static"
 )
+auth = HTTPBasicAuth()
+
+users = {
+    "tom": "password123",
+}
+
+
+@auth.get_password
+def get_pw(username):
+    if username in users:
+        return users.get(username)
+    return None
 
 
 @app.route("/channel/<name>/")
+@auth.login_required
 def channel_name(name):
     messages = flask._app_ctx_stack.channels[name]
     channels = list(flask._app_ctx_stack.channels.keys())
-    groups = list(flask._app_ctx_stack.groups.keys()) if flask._app_ctx_stack.groups else {}
+    groups = list(flask._app_ctx_stack.groups.keys()
+                  ) if flask._app_ctx_stack.groups else {}
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
@@ -27,6 +41,7 @@ def channel_name(name):
 
 
 @app.route("/group/<name>/")
+@auth.login_required
 def group_name(name):
     messages = flask._app_ctx_stack.groups[name]
     channels = list(flask._app_ctx_stack.channels.keys())
@@ -45,6 +60,7 @@ def group_name(name):
 
 
 @app.route("/dm/<id>/")
+@auth.login_required
 def dm_id(id):
     messages = flask._app_ctx_stack.dms[id]
     channels = list(flask._app_ctx_stack.channels.keys())
@@ -63,6 +79,7 @@ def dm_id(id):
 
 
 @app.route("/mpim/<name>/")
+@auth.login_required
 def mpim_name(name):
     messages = flask._app_ctx_stack.mpims[name]
     channels = list(flask._app_ctx_stack.channels.keys())
@@ -81,6 +98,7 @@ def mpim_name(name):
 
 
 @app.route("/")
+@auth.login_required
 def index():
     channels = list(flask._app_ctx_stack.channels.keys())
     groups = list(flask._app_ctx_stack.groups.keys())

@@ -5,3 +5,5 @@ emoji>=2.0.0,<3.0
 slack_sdk
 sqlalchemy
 psycopg2
+flask-httpauth
+gunicorn
