@@ -8,6 +8,8 @@ from slackviewer.archive import extract_archive
 from slackviewer.reader import Reader
 from slackviewer.utils.click import envvar, flag_ennvar
 
+from slackviewer.data import *
+from threading import Thread
 
 def configure_app(app, archive, channels, no_sidebar, no_external_references, debug):
     app.debug = debug
@@ -28,6 +30,14 @@ def configure_app(app, archive, channels, no_sidebar, no_external_references, de
     top.mpims = reader.compile_mpim_messages()
     top.mpim_users = reader.compile_mpim_users()
 
+def empty_app():
+    top = flask._app_ctx_stack
+    top.channels = {}
+    top.groups = {}
+    top.dms = {}
+    top.dm_users = {}
+    top.mpims = {}
+    top.mpim_users = {}
 
 @click.command()
 @click.option('-p', '--port', default=envvar('SEV_PORT', '5000'),
@@ -55,10 +65,20 @@ def configure_app(app, archive, channels, no_sidebar, no_external_references, de
                    " and immediately quit.")
 @click.option('--debug', is_flag=True, default=flag_ennvar("FLASK_DEBUG"))
 def main(port, archive, ip, no_browser, channels, no_sidebar, no_external_references, test, debug):
-    if not archive:
-        raise ValueError("Empty path provided for archive")
+    # if not archive:
+    #     raise ValueError("Empty path provided for archive")
 
-    configure_app(app, archive, channels, no_sidebar, no_external_references, debug)
+    if prepare():
+        configure_app(app, "tmp", channels, no_sidebar, no_external_references, debug)
+    else:
+        empty_app()
+
+    def dl():
+        saveData()
+        prepare()
+        configure_app(app, "tmp", channels, no_sidebar, no_external_references, debug)
+
+    Thread(target=dl).start()
 
     if not no_browser and not test:
         webbrowser.open("http://{}:{}".format(ip, port))
