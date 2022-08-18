@@ -40,12 +40,12 @@ def empty_app():
     top.mpim_users = {}
 
 @click.command()
-@click.option('-p', '--port', default=envvar('SEV_PORT', '5000'),
+@click.option('-p', '--port', default=envvar('PORT', '5000'),
               type=click.INT, help="Host port to serve your content on")
 @click.option("-z", "--archive", type=click.Path(), required=True,
               default=envvar('SEV_ARCHIVE', ''),
               help="Path to your Slack export archive (.zip file or directory)")
-@click.option('-I', '--ip', default=envvar('SEV_IP', 'localhost'),
+@click.option('-I', '--ip', default=envvar('SEV_IP', '0.0.0.0'),
               type=click.STRING, help="Host IP to serve your content on")
 @click.option('--no-browser', is_flag=True,
               default=flag_ennvar("SEV_NO_BROWSER"),
